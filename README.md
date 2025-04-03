@@ -56,9 +56,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/file_upload_api_s3
+    url: jdbc:mysql://localhost:3306/your-db-password
     username: root
-    password: Hari@Sql18
+    password: your-password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
