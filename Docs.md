@@ -1,27 +1,107 @@
-# Getting Started
+# File Upload API Documentation
 
-### Reference Documentation
-For further reference, please consider the following sections:
+## Server Configuration
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.4/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.4/maven-plugin/build-image.html)
-* [Spring Web](https://docs.spring.io/spring-boot/3.4.4/reference/web/servlet.html)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/3.4.4/reference/data/sql.html#data.sql.jpa-and-spring-data)
+### `application.yml`
+```yaml
+server:
+  port: 8080
 
-### Guides
-The following guides illustrate how to use some features concretely:
+spring:
+  application:
+    name: file-upload-api
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-* [Accessing data with MySQL](https://spring.io/guides/gs/accessing-data-mysql/)
+  datasource:
+    url: jdbc:mysql://localhost:3306/your-db-name
+    username: root
+    password: your-password
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
-### Maven Parent overrides
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+aws:
+  s3:
+    bucket-name: ${your-bucket-name}
+    region: ${your-region-name}
+  access-key: ${your-access-key}
+  secret-key: ${your-secret-key}
+```
+
+## API Endpoints
+
+### 1. Upload File
+- **Endpoint:** `POST /api/files/upload`
+- **Description:** Uploads a file to AWS S3 and stores metadata in MySQL.
+- **Request:**
+  ```http
+  POST http://localhost:8080/api/files/upload
+  Content-Type: multipart/form-data
+  ```
+  **Form Data:**
+  - `file`: (Binary file)
+
+- **Response:**
+  ```json
+  {
+    "id": 1,
+    "fileName": "sample.pdf",
+    "fileUrl": "https://s3.amazonaws.com/your-bucket/sample.pdf",
+    "uploadTime": "2025-04-03T10:00:00Z"
+  }
+  ```
+
+### 2. Get All Files
+- **Endpoint:** `GET /api/files/all`
+- **Description:** Fetches metadata of all uploaded files.
+- **Response:**
+  ```json
+  [
+    {
+      "id": 1,
+      "fileName": "sample.pdf",
+      "fileUrl": "https://s3.amazonaws.com/your-bucket/sample.pdf",
+      "uploadTime": "2025-04-03T10:00:00Z"
+    }
+  ]
+  ```
+
+### 3. Get File by ID
+- **Endpoint:** `GET /api/files/{id}`
+- **Description:** Fetches metadata of a file by its ID.
+- **Response:**
+  ```json
+  {
+    "id": 1,
+    "fileName": "sample.pdf",
+    "fileUrl": "https://s3.amazonaws.com/your-bucket/sample.pdf",
+    "uploadTime": "2025-04-03T10:00:00Z"
+  }
+  ```
+
+### 4. Delete File by ID
+- **Endpoint:** `DELETE /api/files/delete/{id}`
+- **Description:** Deletes a file from AWS S3 and removes metadata from MySQL.
+- **Response:**
+  ```json
+  {
+    "message": "File deleted successfully"
+  }
+  ```
+
+## Notes
+- Ensure AWS credentials are properly configured in the environment variables.
+- File size should not exceed **10MB**.
+- Files are stored securely in AWS S3.
+- MySQL database stores metadata for easy file retrieval.
+- Delete operation removes the file from both S3 and MySQL.
 
